@@ -1,5 +1,5 @@
-module github.com/zaddok/moodle
+module github.com/lszt/moodle
 
 go 1.12
 
-require google.golang.org/appengine v1.6.6 // indirect
+require google.golang.org/appengine v1.6.6
