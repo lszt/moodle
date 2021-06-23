@@ -106,6 +106,8 @@ type Person struct {
 	Email                string `json:",omitempty"`
 	FirstName            string `json:",omitempty"`
 	LastName             string `json:",omitempty"`
+	IdNumber             string `json:"idnumber,omitempty"`
+	Auth                 string `json:"auth,omitempty"`
 	ProfileImageUrl      string `json:"profileimageurl,omitempty"`
 	ProfileImageUrlSmall string `json:"profileimageurlsmall,omitempty"`
 	Suspended            bool
@@ -386,6 +388,28 @@ func (m *MoodleApi) SetProfilePicture(userMoodleId int64, r io.Reader) error {
 		if strings.TrimSpace(body) != "null" {
 			return errors.New("Server returned unexpected response: " + body)
 		}*/
+
+	return nil
+}
+
+// Delete a user
+func (m *MoodleApi) DeleteUser(moodleId int64) error {
+	url := fmt.Sprintf("%swebservice/rest/server.php?wstoken=%s&wsfunction=%s&moodlewsrestformat=json&userids[0]=%d", m.base, m.token, "core_user_delete_users", moodleId)
+	m.log.Debug("Fetch: %s", url)
+	body, _, _, err := m.fetch.GetUrl(url)
+
+	if err != nil {
+		return err
+	}
+
+	if strings.HasPrefix(body, "{\"exception\":\"") {
+		message := readError(body)
+		return errors.New(message + ". " + url)
+	}
+
+	if strings.TrimSpace(body) != "null" {
+		return errors.New("Server returned unexpected response: " + body)
+	}
 
 	return nil
 }
@@ -814,6 +838,8 @@ func (m *MoodleApi) GetPeopleByAttribute(attribute, value string) (*[]Person, er
 		LastName             string        `json:"lastname"`
 		Email                string        `json:"email"`
 		Username             string        `json:"username"`
+		IdNumber             string        `json:"idnumber"`
+		Auth                 string        `json:"auth"`
 		ProfileImageUrl      string        `json:"profileimageurl,omitempty"`
 		ProfileImageUrlSmall string        `json:"profileimageurlsmall,omitempty"`
 		CustomFields         []CustomField `json:"customfields"`
@@ -835,7 +861,7 @@ func (m *MoodleApi) GetPeopleByAttribute(attribute, value string) (*[]Person, er
 			i.ProfileImageUrl = ""
 			i.ProfileImageUrlSmall = ""
 		}
-		p := Person{MoodleId: i.Id, FirstName: i.FirstName, LastName: i.LastName, Email: i.Email, Username: i.Username, ProfileImageUrl: i.ProfileImageUrl, ProfileImageUrlSmall: i.ProfileImageUrlSmall}
+		p := Person{MoodleId: i.Id, FirstName: i.FirstName, LastName: i.LastName, Email: i.Email, Username: i.Username, IdNumber: i.IdNumber, Auth: i.Auth, ProfileImageUrl: i.ProfileImageUrl, ProfileImageUrlSmall: i.ProfileImageUrlSmall}
 		for _, c := range i.CustomFields {
 			p.CustomField = append(p.CustomField, CustomField{Name: c.Name, Value: c.Value})
 		}
